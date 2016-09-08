@@ -3,6 +3,10 @@
     <output-path>$PROJECT_DIR$/out/artifacts/MessenJ_jar</output-path>
     <root id="archive" name="MessenJ.jar">
       <element id="module-output" name="MessenJ" />
+      <element id="file-copy" path="$PROJECT_DIR$/dependencies/forms_rt.jar" />
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/META-INF/MANIFEST.MF" />
+      </element>
     </root>
   </artifact>
 </component>
