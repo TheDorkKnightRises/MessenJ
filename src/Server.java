@@ -1,11 +1,13 @@
+import com.sun.istack.internal.Nullable;
+
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -19,34 +21,51 @@ public class Server extends JFrame {
     private ObjectOutputStream outputStream;
     private ServerSocket serverSocket;
     private Socket socket;
+    private int port;
+    private String user;
+    private JButton sendButton;
+    private JPanel contentPane;
 
-    public Server() {
+    public Server(int port, @Nullable String user) {
         super("MessenJ IM - Server");
+        setContentPane(contentPane);
+        setSize(640, 480);
+        setLocationByPlatform(true);
+        getRootPane().setDefaultButton(sendButton);
+
+        this.port = port;
+        if (!user.equals("")) {
+            this.user = user;
+        } else this.user = "SERVER";
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        inputField = new JTextField();
         allowTyping(false);
         inputField.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                send(e.getActionCommand());
-                inputField.setText("");
+                String text = e.getActionCommand();
+                if (!text.equals("")) {
+                    send(text);
+                    inputField.setText("");
+                }
             }
         });
-        add(inputField, BorderLayout.SOUTH);
-        textArea = new JTextArea();
-        textArea.setEditable(false);
-        add(new JScrollPane(textArea));
-        setSize(640, 480);
+        sendButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String text = inputField.getText();
+                if (!text.equals("")) {
+                    send(text);
+                    inputField.setText("");
+                }
+            }
+        });
         setVisible(true);
+        setupServer();
     }
 
-    public static void main(String arg[]) {
-        new Server().setupServer();
-    }
-
-    public void setupServer() {
+    void setupServer() {
         try {
-            serverSocket =  new ServerSocket(1181, 5);
+            serverSocket =  new ServerSocket(port, 5);
             while (true) {
                 try {
                     waitForConnection();
@@ -58,32 +77,35 @@ public class Server extends JFrame {
                     close();
                 }
             }
+        } catch (BindException e) {
+            showMessage("This port is already in use. Try hosting on a different port");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void allowTyping(final boolean allowed) {
+    void allowTyping(final boolean allowed) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 inputField.setEditable(allowed);
+                sendButton.setEnabled(allowed);
             }
         });
     }
 
-    private void send(String text) {
+    void send(String text) {
         try {
-            outputStream.writeObject("SERVER: " + text);
+            outputStream.writeObject(user+": " + text);
             outputStream.flush();
-            showMessage("SERVER: " + text);
+            showMessage(user+": " + text);
         } catch (IOException e) {
             e.printStackTrace();
             showMessage("Couldn\'t send your message");
         }
     }
 
-    private void showMessage(final String text) {
+    void showMessage(final String text) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -92,20 +114,20 @@ public class Server extends JFrame {
         });
     }
 
-    private void waitForConnection() throws IOException {
+    void waitForConnection() throws IOException {
         showMessage("Waiting to connect...");
         socket = serverSocket.accept();
         showMessage("Connecting to " + socket.getInetAddress().getHostName());
     }
 
-    private void setupStreams() throws IOException {
+    void setupStreams() throws IOException {
         outputStream = new ObjectOutputStream(socket.getOutputStream());
         outputStream.flush();
         inputStream = new ObjectInputStream(socket.getInputStream());
         showMessage("Connection established");
     }
 
-    private void whileConnected() throws IOException {
+    void whileConnected() throws IOException {
         String message = "";
         allowTyping(true);
         do {
@@ -119,7 +141,7 @@ public class Server extends JFrame {
         } while (!message.equals("Client: END"));
     }
 
-    private void close() {
+    void close() {
         showMessage("Closing all connections...");
         allowTyping(false);
         try {
@@ -128,6 +150,8 @@ public class Server extends JFrame {
             socket.close();
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            showMessage("All connections closed.");
         }
     }
 }
