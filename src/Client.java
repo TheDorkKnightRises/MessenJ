@@ -117,7 +117,6 @@ public class Client extends JFrame {
             } else {
                 outputStream.writeObject(user + ": " + text);
                 outputStream.flush();
-                showMessage(user + ": " + text);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -138,18 +137,22 @@ public class Client extends JFrame {
         try {
             showMessage("Attempting connection to server...");
             socket = new Socket(InetAddress.getByName(serverIP), serverPort);
-            showMessage("Connecting to " + socket.getInetAddress().getHostName());
+            showMessage("Connecting to " + socket.getInetAddress().getHostName() + " (waiting in queue)");
         } catch (ConnectException e) {
             showMessage("Could not connect to server at that address");
         }
     }
 
-    void setupStreams() throws IOException {
-        outputStream = new ObjectOutputStream(socket.getOutputStream());
-        outputStream.flush();
-        inputStream = new ObjectInputStream(socket.getInputStream());
-        showMessage("Connection established");
-        infoLabel.setText("Connected as " + user + " to " + socket.getInetAddress().getHostName() + ":" + serverPort);
+    void setupStreams() {
+        try {
+            outputStream = new ObjectOutputStream(socket.getOutputStream());
+            outputStream.flush();
+            inputStream = new ObjectInputStream(socket.getInputStream());
+            showMessage("Connection established");
+            infoLabel.setText("Connected as " + user + " to " + socket.getInetAddress().getHostName() + ":" + serverPort);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     void whileConnected() throws IOException {
