@@ -13,6 +13,7 @@ import java.io.ObjectOutputStream;
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 
 /**
  * Created by Samriddha Basu on 9/8/2016.
@@ -117,9 +118,14 @@ public class Server extends JFrame {
 
     void send(String text) {
         try {
-            outputStream.writeObject(user + ": " + text);
-            outputStream.flush();
-            showMessage(user + ": " + text);
+            if (text.equals("END")) {
+                outputStream.writeObject(text);
+                outputStream.flush();
+            } else {
+                outputStream.writeObject(user + ": " + text);
+                outputStream.flush();
+                showMessage(user + ": " + text);
+            }
         } catch (IOException e) {
             e.printStackTrace();
             showMessage("Couldn\'t send your message");
@@ -159,8 +165,11 @@ public class Server extends JFrame {
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
                 showMessage("Something went wrong, cannot display message");
+            } catch (SocketException e) {
+                e.printStackTrace();
+                break;
             }
-        } while (!message.equals("Client: END"));
+        } while (!message.equals("END"));
     }
 
     void close() {

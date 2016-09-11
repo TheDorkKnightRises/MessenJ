@@ -13,6 +13,7 @@ import java.io.ObjectOutputStream;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
 
 /**
  * Created by Samriddha Basu on 9/8/2016.
@@ -26,7 +27,6 @@ public class Client extends JFrame {
     String serverIP;
     int serverPort;
     String user;
-    String message = "";
     private JButton sendButton;
     private JPanel contentPane;
     private JButton shareFileButton;
@@ -111,9 +111,14 @@ public class Client extends JFrame {
 
     void send(String text) {
         try {
-            outputStream.writeObject(user + ": " + text);
-            outputStream.flush();
-            showMessage(user + ": " + text);
+            if (text.equals("END")) {
+                outputStream.writeObject(text);
+                outputStream.flush();
+            } else {
+                outputStream.writeObject(user + ": " + text);
+                outputStream.flush();
+                showMessage(user + ": " + text);
+            }
         } catch (IOException e) {
             e.printStackTrace();
             showMessage("Couldn\'t send your message");
@@ -157,8 +162,11 @@ public class Client extends JFrame {
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
                 showMessage("Something went wrong, cannot display message");
+            } catch (SocketException e) {
+                e.printStackTrace();
+                break;
             }
-        } while (!message.equals("SERVER: END"));
+        } while (!message.equals("END"));
     }
 
     void close() {
