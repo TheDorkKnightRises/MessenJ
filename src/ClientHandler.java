@@ -1,3 +1,4 @@
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -7,14 +8,14 @@ import java.net.SocketException;
 /**
  * Created by Samriddha Basu on 9/11/2016.
  */
-public class ClientThread implements Runnable {
-    ObjectInputStream inputStream;
+public class ClientHandler implements Runnable {
     ObjectOutputStream outputStream;
+    private ObjectInputStream inputStream;
     private Server server;
     private Socket socket;
     private int number;
 
-    public ClientThread(Server server, Socket socket, int number) {
+    public ClientHandler(Server server, Socket socket, int number) {
         this.server = server;
         this.socket = socket;
         this.number = number;
@@ -30,23 +31,36 @@ public class ClientThread implements Runnable {
     void setup() {
         try {
             inputStream = new ObjectInputStream(socket.getInputStream());
+            String username = (String) inputStream.readObject();
+            server.users[number + 1] = username;
+            server.send(new Message(username + " joined the conversation"));
             outputStream = new ObjectOutputStream(socket.getOutputStream());
             outputStream.flush();
+            outputStream.writeObject(server.users);
+            outputStream.flush();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            server.showMessage(new Message("Error fetching username"));
             e.printStackTrace();
         }
     }
 
     void whileConnected() {
-        String message = "";
+        Object object;
+        Message message = new Message("");
         server.allowTyping(true);
         do {
             try {
-                message = (String) inputStream.readObject();
-                server.send(message);
+                object = inputStream.readObject();
+                if (object instanceof Message) {
+                    message = (Message) object;
+                    server.send(message);
+                }
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
-                server.showMessage("Something went wrong, cannot display message");
+                server.showMessage(new Message("Something went wrong, cannot display message"));
+            } catch (EOFException e) {
             } catch (SocketException e) {
                 e.printStackTrace();
                 break;
@@ -54,19 +68,17 @@ public class ClientThread implements Runnable {
                 e.printStackTrace();
                 break;
             }
-        } while (!message.equals("END"));
+        } while (message.getType() != Message.TYPE_DISCONNECT);
     }
 
     void close() {
-        server.showMessage("Closing connection with " + socket.getInetAddress().getHostName());
+        server.showMessage(new Message("Closing connection with " + server.users[number + 1]));
         try {
             inputStream.close();
             outputStream.close();
             socket.close();
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            server.showMessage(socket.getInetAddress().getHostName() + " disconnected");
         }
         server.disconnected(number);
     }
