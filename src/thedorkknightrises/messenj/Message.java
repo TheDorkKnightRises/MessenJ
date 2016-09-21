@@ -1,3 +1,5 @@
+package thedorkknightrises.messenj;
+
 import java.io.Serializable;
 
 /**

@@ -1,10 +1,15 @@
+package thedorkknightrises.messenj;
+
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -68,17 +73,9 @@ public class Launch extends JFrame {
         host.setEnabled(false);
         clientRadioButton.setLabel("Client");
 
-        buttonOK.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onOK();
-            }
-        });
+        buttonOK.addActionListener(e -> onOK());
 
-        buttonCancel.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        });
+        buttonCancel.addActionListener(e -> onCancel());
 
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -89,11 +86,7 @@ public class Launch extends JFrame {
         });
 
         // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
     public static void main(String[] args) {
@@ -101,7 +94,7 @@ public class Launch extends JFrame {
         dialog.pack();
         dialog.setVisible(true);
     }
-
+    
     private void onOK() {
         final String user = username.getText().trim();
         if (user.equals("")) {
@@ -115,21 +108,11 @@ public class Launch extends JFrame {
             Runnable r;
             if (clientRadioButton.isSelected()) {
                 final String hostname = host.getText().trim();
-                r = new Runnable() {
-                    @Override
-                    public void run() {
-                        new Client(hostname, portNo, user);
-                    }
-                };
+                r = () -> new Client(hostname, portNo, user);
             } else {
                 final int number = (clientNumber.getText().trim().equals("")) ? 1 : Integer.parseInt(clientNumber.getText().trim());
                 if (number < 1 || number > 10) return;
-                r = new Runnable() {
-                    @Override
-                    public void run() {
-                        new Server(portNo, user, number);
-                    }
-                };
+                r = () -> new Server(portNo, user, number);
             }
             ExecutorService executor = Executors.newCachedThreadPool();
             executor.submit(r);
