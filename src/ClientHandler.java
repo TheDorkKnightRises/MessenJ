@@ -48,7 +48,7 @@ public class ClientHandler implements Runnable {
 
     void whileConnected() {
         Object object;
-        Message message = new Message("");
+        Message message;
         server.allowTyping(true);
         do {
             try {
@@ -75,6 +75,7 @@ public class ClientHandler implements Runnable {
     }
 
     void close() {
+        if (server.users[number + 1] != null)
         server.showMessage(new Message("Closing connection with " + server.users[number + 1]));
         try {
             inputStream.close();

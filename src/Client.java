@@ -1,11 +1,8 @@
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.sun.istack.internal.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.ConnectException;
 import java.net.InetAddress;
@@ -40,7 +37,7 @@ public class Client extends JFrame {
         $$$setupUI$$$();
     }
 
-    public Client(String host, int port, @Nullable final String user) {
+    public Client(String host, int port, final String user) {
         super("MessenJ IM - Client");
         setContentPane(contentPane);
         setSize(640, 480);
@@ -55,38 +52,30 @@ public class Client extends JFrame {
         serverIP = host;
         serverPort = port;
         allowTyping(false);
-        inputField.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String text = e.getActionCommand();
-                if (!text.equals("")) {
-                    send(new Message(Message.TYPE_TEXT, text, user));
-                    inputField.setText("");
-                }
+        inputField.addActionListener(e -> {
+            String text = e.getActionCommand();
+            if (!text.equals("")) {
+                send(new Message(Message.TYPE_TEXT, text, user));
+                inputField.setText("");
             }
         });
-        sendButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String text = inputField.getText();
-                if (!text.equals("")) {
-                    send(new Message(Message.TYPE_TEXT, text, user));
-                    inputField.setText("");
-                }
+        sendButton.addActionListener(e -> {
+            String text = inputField.getText();
+            if (!text.equals("")) {
+                send(new Message(Message.TYPE_TEXT, text, user));
+                inputField.setText("");
             }
         });
-        shareFileButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (fileChooser.showOpenDialog(contentPane) == JFileChooser.APPROVE_OPTION) {
-                    Message message;
-                    try {
-                        File file = fileChooser.getSelectedFile();
-                        message = new Message(Message.TYPE_FILE, Files.readAllBytes(file.toPath()), file.getName(), user);
-                        send(message);
-                    } catch (IOException e1) {
-                        showMessage(new Message("Error sending file"));
-                        e1.printStackTrace();
-                    }
+        shareFileButton.addActionListener(e -> {
+            if (fileChooser.showOpenDialog(contentPane) == JFileChooser.APPROVE_OPTION) {
+                Message message;
+                try {
+                    File file = fileChooser.getSelectedFile();
+                    message = new Message(Message.TYPE_FILE, Files.readAllBytes(file.toPath()), file.getName(), user);
+                    send(message);
+                } catch (IOException e1) {
+                    showMessage(new Message("Error sending file"));
+                    e1.printStackTrace();
                 }
             }
         });
@@ -110,13 +99,10 @@ public class Client extends JFrame {
     }
 
     void allowTyping(final boolean allowed) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                inputField.setEditable(allowed);
-                sendButton.setEnabled(allowed);
-                shareFileButton.setEnabled(allowed);
-            }
+        SwingUtilities.invokeLater(() -> {
+            inputField.setEditable(allowed);
+            sendButton.setEnabled(allowed);
+            shareFileButton.setEnabled(allowed);
         });
     }
 
@@ -262,33 +248,35 @@ public class Client extends JFrame {
      */
     private void $$$setupUI$$$() {
         contentPane = new JPanel();
-        contentPane.setLayout(new GridLayoutManager(5, 3, new Insets(8, 8, 8, 8), -1, -1));
+        contentPane.setLayout(new GridLayoutManager(3, 3, new Insets(8, 8, 8, 8), -1, -1));
         final JScrollPane scrollPane1 = new JScrollPane();
-        contentPane.add(scrollPane1, new GridConstraints(1, 0, 3, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        contentPane.add(scrollPane1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         textArea = new JTextArea();
         textArea.setEditable(false);
+        textArea.setFont(new Font(textArea.getFont().getName(), textArea.getFont().getStyle(), textArea.getFont().getSize()));
         textArea.setText("");
         scrollPane1.setViewportView(textArea);
         inputField = new JTextField();
-        contentPane.add(inputField, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        contentPane.add(inputField, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         infoLabel = new JLabel();
         infoLabel.setText("Not connected");
         contentPane.add(infoLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JScrollPane scrollPane2 = new JScrollPane();
-        contentPane.add(scrollPane2, new GridConstraints(2, 1, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        contentPane.add(scrollPane2, new GridConstraints(1, 1, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         userText = new JTextArea();
         userText.setEditable(false);
+        userText.setFont(new Font(userText.getFont().getName(), userText.getFont().getStyle(), userText.getFont().getSize()));
         userText.setText("");
         scrollPane2.setViewportView(userText);
         sendButton = new JButton();
         sendButton.setText("Send");
-        contentPane.add(sendButton, new GridConstraints(4, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        contentPane.add(sendButton, new GridConstraints(2, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         shareFileButton = new JButton();
         shareFileButton.setText("Share file");
-        contentPane.add(shareFileButton, new GridConstraints(4, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        contentPane.add(shareFileButton, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JLabel label1 = new JLabel();
         label1.setText("Connected users:");
-        contentPane.add(label1, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        contentPane.add(label1, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**

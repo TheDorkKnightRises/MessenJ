@@ -1,11 +1,8 @@
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.sun.istack.internal.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.BindException;
 import java.net.ServerSocket;
@@ -19,7 +16,6 @@ public class Server extends JFrame {
     JLabel infoLabel;
     String[] users;
     private JTextField inputField;
-    private JTextArea textArea;
     private ServerSocket serverSocket;
     private int connections;
     private int port;
@@ -29,6 +25,7 @@ public class Server extends JFrame {
     private JPanel contentPane;
     private JButton shareFileButton;
     private JTextArea userText;
+    private JTextArea textArea;
     private JFileChooser fileChooser;
     private ClientHandler[] clientHandlers;
 
@@ -39,7 +36,7 @@ public class Server extends JFrame {
         $$$setupUI$$$();
     }
 
-    public Server(int port, @Nullable final String user, int number) {
+    public Server(int port, final String user, int number) {
         super("MessenJ IM - Server");
         setContentPane(contentPane);
         setSize(640, 480);
@@ -55,38 +52,30 @@ public class Server extends JFrame {
         users = new String[number + 1];
         users[0] = user;
         allowTyping(false);
-        inputField.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String text = e.getActionCommand();
-                if (!text.equals("")) {
-                    send(new Message(Message.TYPE_TEXT, text, user));
-                    inputField.setText("");
-                }
+        inputField.addActionListener(e -> {
+            String text = e.getActionCommand();
+            if (!text.equals("")) {
+                send(new Message(Message.TYPE_TEXT, text, user));
+                inputField.setText("");
             }
         });
-        sendButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String text = inputField.getText();
-                if (!text.equals("")) {
-                    send(new Message(Message.TYPE_TEXT, text, user));
-                    inputField.setText("");
-                }
+        sendButton.addActionListener(e -> {
+            String text = inputField.getText();
+            if (!text.equals("")) {
+                send(new Message(Message.TYPE_TEXT, text, user));
+                inputField.setText("");
             }
         });
-        shareFileButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (fileChooser.showOpenDialog(contentPane) == JFileChooser.APPROVE_OPTION) {
-                    Message message;
-                    try {
-                        File file = fileChooser.getSelectedFile();
-                        message = new Message(Message.TYPE_FILE, Files.readAllBytes(file.toPath()), file.getName(), user);
-                        send(message);
-                    } catch (IOException e1) {
-                        showMessage(new Message("Error sending file"));
-                        e1.printStackTrace();
-                    }
+        shareFileButton.addActionListener(e -> {
+            if (fileChooser.showOpenDialog(contentPane) == JFileChooser.APPROVE_OPTION) {
+                Message message;
+                try {
+                    File file = fileChooser.getSelectedFile();
+                    message = new Message(Message.TYPE_FILE, Files.readAllBytes(file.toPath()), file.getName(), user);
+                    send(message);
+                } catch (IOException e1) {
+                    showMessage(new Message("Error sending file"));
+                    e1.printStackTrace();
                 }
             }
         });
@@ -113,13 +102,10 @@ public class Server extends JFrame {
     }
 
     void allowTyping(final boolean allowed) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                inputField.setEditable(allowed);
-                sendButton.setEnabled(allowed);
-                shareFileButton.setEnabled(allowed);
-            }
+        SwingUtilities.invokeLater(() -> {
+            inputField.setEditable(allowed);
+            sendButton.setEnabled(allowed);
+            shareFileButton.setEnabled(allowed);
         });
     }
 
@@ -140,45 +126,42 @@ public class Server extends JFrame {
     }
 
     void showMessage(final Message message) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                switch (message.getType()) {
-                    case Message.TYPE_CONNECT:
-                        textArea.append(message.getText() + "\n");
-                        updateUserList();
-                        break;
-                    case Message.TYPE_DISCONNECT:
-                        users[message.getNumber() + 1] = null;
-                        updateUserList();
-                    case Message.TYPE_ANNOUNCE:
-                        textArea.append(message.getText() + "\n");
-                        break;
-                    case Message.TYPE_TEXT:
-                        textArea.append(message.getSender() + ": " + message.getText() + "\n");
-                        break;
-                    case Message.TYPE_FILE:
-                        try {
-                            new File(System.getProperty("user.home")
-                                    + File.separator
-                                    + "MessenJ")
-                                    .mkdirs();
-                            File newFile = new File(System.getProperty("user.home")
-                                    + File.separator
-                                    + "MessenJ"
-                                    + File.separator
-                                    + message.getText());
-                            showMessage(new Message(message.getSender() + " is sending file: " + message.getText()));
-                            FileOutputStream writer = new FileOutputStream(newFile);
-                            writer.write(message.getData());
-                            writer.close();
-                            showMessage(new Message("File transfer complete"));
-                            showMessage(new Message("Saved to: " + newFile.toPath()));
-                        } catch (IOException e) {
-                            showMessage(new Message("Error transferring file"));
-                        }
-                        break;
-                }
+        SwingUtilities.invokeLater(() -> {
+            switch (message.getType()) {
+                case Message.TYPE_CONNECT:
+                    textArea.append(message.getText() + "\n");
+                    updateUserList();
+                    break;
+                case Message.TYPE_DISCONNECT:
+                    users[message.getNumber() + 1] = null;
+                    updateUserList();
+                case Message.TYPE_ANNOUNCE:
+                    textArea.append(message.getText() + "\n");
+                    break;
+                case Message.TYPE_TEXT:
+                    textArea.append(message.getSender() + ": " + message.getText() + "\n");
+                    break;
+                case Message.TYPE_FILE:
+                    try {
+                        new File(System.getProperty("user.home")
+                                + File.separator
+                                + "MessenJ")
+                                .mkdirs();
+                        File newFile = new File(System.getProperty("user.home")
+                                + File.separator
+                                + "MessenJ"
+                                + File.separator
+                                + message.getText());
+                        showMessage(new Message(message.getSender() + " is sending file: " + message.getText()));
+                        FileOutputStream writer = new FileOutputStream(newFile);
+                        writer.write(message.getData());
+                        writer.close();
+                        showMessage(new Message("File transfer complete"));
+                        showMessage(new Message("Saved to: " + newFile.toPath()));
+                    } catch (IOException e) {
+                        showMessage(new Message("Error transferring file"));
+                    }
+                    break;
             }
         });
     }
@@ -206,7 +189,9 @@ public class Server extends JFrame {
     void disconnected(int number) {
         clientHandlers[number] = null;
         connections--;
-        send(new Message(Message.TYPE_DISCONNECT, number, users[number + 1] + " disconnected", users[number + 1]));
+        if (users[number + 1] != null)
+            send(new Message(Message.TYPE_DISCONNECT, number, users[number + 1] + " disconnected", users[number + 1]));
+        users[number + 1] = null;
         waitForConnection(number);
     }
 
@@ -242,31 +227,32 @@ public class Server extends JFrame {
      */
     private void $$$setupUI$$$() {
         contentPane = new JPanel();
-        contentPane.setLayout(new GridLayoutManager(4, 3, new Insets(8, 8, 8, 8), -1, -1));
-        final JScrollPane scrollPane1 = new JScrollPane();
-        contentPane.add(scrollPane1, new GridConstraints(1, 0, 2, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-        textArea = new JTextArea();
-        textArea.setEditable(false);
-        scrollPane1.setViewportView(textArea);
+        contentPane.setLayout(new GridLayoutManager(3, 3, new Insets(8, 8, 8, 8), -1, -1));
         inputField = new JTextField();
-        contentPane.add(inputField, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        contentPane.add(inputField, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         infoLabel = new JLabel();
         infoLabel.setText("Not connected");
         contentPane.add(infoLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        final JScrollPane scrollPane2 = new JScrollPane();
-        contentPane.add(scrollPane2, new GridConstraints(2, 1, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        final JScrollPane scrollPane1 = new JScrollPane();
+        contentPane.add(scrollPane1, new GridConstraints(1, 1, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         userText = new JTextArea();
         userText.setEditable(false);
-        scrollPane2.setViewportView(userText);
+        userText.setFont(new Font(userText.getFont().getName(), userText.getFont().getStyle(), userText.getFont().getSize()));
+        scrollPane1.setViewportView(userText);
         sendButton = new JButton();
         sendButton.setText("Send");
-        contentPane.add(sendButton, new GridConstraints(3, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        contentPane.add(sendButton, new GridConstraints(2, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         shareFileButton = new JButton();
         shareFileButton.setText("Share file");
-        contentPane.add(shareFileButton, new GridConstraints(3, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        contentPane.add(shareFileButton, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JLabel label1 = new JLabel();
         label1.setText("Connected users:");
-        contentPane.add(label1, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        contentPane.add(label1, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JScrollPane scrollPane2 = new JScrollPane();
+        contentPane.add(scrollPane2, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        textArea = new JTextArea();
+        textArea.setEditable(false);
+        scrollPane2.setViewportView(textArea);
     }
 
     /**
