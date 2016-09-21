@@ -28,6 +28,7 @@ public class Server extends JFrame {
     private JButton sendButton;
     private JPanel contentPane;
     private JButton shareFileButton;
+    private JTextArea userText;
     private JFileChooser fileChooser;
     private ClientHandler[] clientHandlers;
 
@@ -143,8 +144,14 @@ public class Server extends JFrame {
             @Override
             public void run() {
                 switch (message.getType()) {
-                    case Message.TYPE_ANNOUNCE:
+                    case Message.TYPE_CONNECT:
+                        textArea.append(message.getText() + "\n");
+                        updateUserList();
+                        break;
                     case Message.TYPE_DISCONNECT:
+                        users[message.getNumber() + 1] = null;
+                        updateUserList();
+                    case Message.TYPE_ANNOUNCE:
                         textArea.append(message.getText() + "\n");
                         break;
                     case Message.TYPE_TEXT:
@@ -176,6 +183,13 @@ public class Server extends JFrame {
         });
     }
 
+    private void updateUserList() {
+        userText.setText("");
+        for (int i = 0; i < users.length; i++)
+            if (users[i] != null) userText.append(users[i] + "\n");
+        userText.updateUI();
+    }
+
     void waitForConnection(int n) {
         if (clientHandlers[n] == null) {
             try {
@@ -192,7 +206,7 @@ public class Server extends JFrame {
     void disconnected(int number) {
         clientHandlers[number] = null;
         connections--;
-        send(new Message(users[number + 1] + " disconnected"));
+        send(new Message(Message.TYPE_DISCONNECT, number, users[number + 1] + " disconnected", users[number + 1]));
         waitForConnection(number);
     }
 
@@ -228,23 +242,31 @@ public class Server extends JFrame {
      */
     private void $$$setupUI$$$() {
         contentPane = new JPanel();
-        contentPane.setLayout(new GridLayoutManager(3, 3, new Insets(8, 8, 8, 8), -1, -1));
+        contentPane.setLayout(new GridLayoutManager(4, 3, new Insets(8, 8, 8, 8), -1, -1));
         final JScrollPane scrollPane1 = new JScrollPane();
-        contentPane.add(scrollPane1, new GridConstraints(1, 0, 1, 3, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        contentPane.add(scrollPane1, new GridConstraints(1, 0, 2, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         textArea = new JTextArea();
         textArea.setEditable(false);
         scrollPane1.setViewportView(textArea);
         inputField = new JTextField();
-        contentPane.add(inputField, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
-        sendButton = new JButton();
-        sendButton.setText("Send");
-        contentPane.add(sendButton, new GridConstraints(2, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        contentPane.add(inputField, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         infoLabel = new JLabel();
         infoLabel.setText("Not connected");
         contentPane.add(infoLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JScrollPane scrollPane2 = new JScrollPane();
+        contentPane.add(scrollPane2, new GridConstraints(2, 1, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        userText = new JTextArea();
+        userText.setEditable(false);
+        scrollPane2.setViewportView(userText);
+        sendButton = new JButton();
+        sendButton.setText("Send");
+        contentPane.add(sendButton, new GridConstraints(3, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         shareFileButton = new JButton();
         shareFileButton.setText("Share file");
-        contentPane.add(shareFileButton, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        contentPane.add(shareFileButton, new GridConstraints(3, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label1 = new JLabel();
+        label1.setText("Connected users:");
+        contentPane.add(label1, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**

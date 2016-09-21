@@ -23,6 +23,7 @@ public class Client extends JFrame {
     private JLabel infoLabel;
     private JTextField inputField;
     private JTextArea textArea;
+    private JTextArea userText;
     private ObjectInputStream inputStream;
     private ObjectOutputStream outputStream;
     private Socket socket;
@@ -138,8 +139,15 @@ public class Client extends JFrame {
             @Override
             public void run() {
                 switch (message.getType()) {
-                    case Message.TYPE_ANNOUNCE:
+                    case Message.TYPE_CONNECT:
+                        textArea.append(message.getText() + "\n");
+                        users[message.getNumber() + 1] = message.getSender();
+                        updateUserList();
+                        break;
                     case Message.TYPE_DISCONNECT:
+                        users[message.getNumber() + 1] = null;
+                        updateUserList();
+                    case Message.TYPE_ANNOUNCE:
                         textArea.append(message.getText() + "\n");
                         break;
                     case Message.TYPE_TEXT:
@@ -171,6 +179,14 @@ public class Client extends JFrame {
         });
     }
 
+    private void updateUserList() {
+        userText.setText("");
+        for (int i = 0; i < users.length; i++) {
+            if (users[i] != null) userText.append(users[i] + "\n");
+        }
+        userText.updateUI();
+    }
+
     void connect() throws IOException {
         try {
             showMessage(new Message("Attempting connection to server..."));
@@ -191,6 +207,7 @@ public class Client extends JFrame {
             showMessage(new Message("Connection established"));
             infoLabel.setText("Connected as " + user + " to " + socket.getInetAddress().getHostName() + ":" + serverPort);
             users = (String[]) inputStream.readObject();
+            updateUserList();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -217,7 +234,7 @@ public class Client extends JFrame {
                 e.printStackTrace();
                 break;
             }
-        } while (message.getType() != Message.TYPE_DISCONNECT);
+        } while (true);
     }
 
     void close() {
@@ -245,23 +262,33 @@ public class Client extends JFrame {
      */
     private void $$$setupUI$$$() {
         contentPane = new JPanel();
-        contentPane.setLayout(new GridLayoutManager(4, 3, new Insets(8, 8, 8, 8), -1, -1));
+        contentPane.setLayout(new GridLayoutManager(5, 3, new Insets(8, 8, 8, 8), -1, -1));
         final JScrollPane scrollPane1 = new JScrollPane();
-        contentPane.add(scrollPane1, new GridConstraints(1, 0, 2, 3, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        contentPane.add(scrollPane1, new GridConstraints(1, 0, 3, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         textArea = new JTextArea();
         textArea.setEditable(false);
+        textArea.setText("");
         scrollPane1.setViewportView(textArea);
         inputField = new JTextField();
-        contentPane.add(inputField, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        contentPane.add(inputField, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         infoLabel = new JLabel();
         infoLabel.setText("Not connected");
         contentPane.add(infoLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JScrollPane scrollPane2 = new JScrollPane();
+        contentPane.add(scrollPane2, new GridConstraints(2, 1, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        userText = new JTextArea();
+        userText.setEditable(false);
+        userText.setText("");
+        scrollPane2.setViewportView(userText);
         sendButton = new JButton();
         sendButton.setText("Send");
-        contentPane.add(sendButton, new GridConstraints(3, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        contentPane.add(sendButton, new GridConstraints(4, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         shareFileButton = new JButton();
         shareFileButton.setText("Share file");
-        contentPane.add(shareFileButton, new GridConstraints(3, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        contentPane.add(shareFileButton, new GridConstraints(4, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label1 = new JLabel();
+        label1.setText("Connected users:");
+        contentPane.add(label1, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**

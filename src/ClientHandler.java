@@ -33,7 +33,7 @@ public class ClientHandler implements Runnable {
             inputStream = new ObjectInputStream(socket.getInputStream());
             String username = (String) inputStream.readObject();
             server.users[number + 1] = username;
-            server.send(new Message(username + " joined the conversation"));
+            server.send(new Message(Message.TYPE_CONNECT, number, username + " joined the conversation", username));
             outputStream = new ObjectOutputStream(socket.getOutputStream());
             outputStream.flush();
             outputStream.writeObject(server.users);
@@ -61,14 +61,17 @@ public class ClientHandler implements Runnable {
                 e.printStackTrace();
                 server.showMessage(new Message("Something went wrong, cannot display message"));
             } catch (EOFException e) {
+                close();
             } catch (SocketException e) {
                 e.printStackTrace();
+                close();
                 break;
             } catch (IOException e) {
                 e.printStackTrace();
+                close();
                 break;
             }
-        } while (message.getType() != Message.TYPE_DISCONNECT);
+        } while (true);
     }
 
     void close() {
