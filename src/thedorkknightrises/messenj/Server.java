@@ -29,6 +29,13 @@ public class Server extends JFrame {
     private JTextArea userText;
     private JTextArea textArea;
     private JButton showSharedFilesButton;
+    private JPanel emojiPanel;
+    private JButton e1;
+    private JButton e2;
+    private JButton e3;
+    private JButton e4;
+    private JButton e5;
+    private JButton e6;
     private JFileChooser fileChooser;
     private ClientHandler[] clientHandlers;
 
@@ -88,11 +95,39 @@ public class Server extends JFrame {
                 e1.printStackTrace();
             }
         });
+        setupEmoji();
         setVisible(true);
         inputField.requestFocus();
         clientHandlers = new ClientHandler[number];
         for (int i = 0; i < number; i++) clientHandlers[i] = null;
         setupServer();
+    }
+
+    private void setupEmoji() {
+        e1.setText("\u263A");
+        e1.addActionListener(e -> {
+            inputField.setText(inputField.getText() + e1.getText());
+        });
+        e2.setText("\uD83D\uDE02");
+        e2.addActionListener(e -> {
+            inputField.setText(inputField.getText() + e2.getText());
+        });
+        e3.setText("\uD83D\uDE22");
+        e3.addActionListener(e -> {
+            inputField.setText(inputField.getText() + e3.getText());
+        });
+        e4.setText("\uD83D\uDC4F");
+        e4.addActionListener(e -> {
+            inputField.setText(inputField.getText() + e4.getText());
+        });
+        e5.setText("\uD83D\uDC4D");
+        e5.addActionListener(e -> {
+            inputField.setText(inputField.getText() + e5.getText());
+        });
+        e6.setText("\uD83D\uDC4E");
+        e6.addActionListener(e -> {
+            inputField.setText(inputField.getText() + e6.getText());
+        });
     }
 
     private void setupServer() {
@@ -241,9 +276,9 @@ public class Server extends JFrame {
      */
     private void $$$setupUI$$$() {
         contentPane = new JPanel();
-        contentPane.setLayout(new GridLayoutManager(4, 3, new Insets(8, 8, 8, 8), -1, -1));
+        contentPane.setLayout(new GridLayoutManager(5, 3, new Insets(8, 8, 8, 8), -1, -1));
         inputField = new JTextField();
-        contentPane.add(inputField, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        contentPane.add(inputField, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         infoLabel = new JLabel();
         infoLabel.setText("Not connected");
         contentPane.add(infoLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
@@ -255,21 +290,42 @@ public class Server extends JFrame {
         scrollPane1.setViewportView(userText);
         sendButton = new JButton();
         sendButton.setText("Send");
-        contentPane.add(sendButton, new GridConstraints(3, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        contentPane.add(sendButton, new GridConstraints(4, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         shareFileButton = new JButton();
         shareFileButton.setText("Share file");
-        contentPane.add(shareFileButton, new GridConstraints(3, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        contentPane.add(shareFileButton, new GridConstraints(4, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JLabel label1 = new JLabel();
         label1.setText("Connected users:");
         contentPane.add(label1, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JScrollPane scrollPane2 = new JScrollPane();
-        contentPane.add(scrollPane2, new GridConstraints(1, 0, 2, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        contentPane.add(scrollPane2, new GridConstraints(1, 0, 3, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         textArea = new JTextArea();
         textArea.setEditable(false);
         scrollPane2.setViewportView(textArea);
         showSharedFilesButton = new JButton();
         showSharedFilesButton.setText("Show shared files");
-        contentPane.add(showSharedFilesButton, new GridConstraints(2, 1, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        contentPane.add(showSharedFilesButton, new GridConstraints(3, 1, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        emojiPanel = new JPanel();
+        emojiPanel.setLayout(new GridLayoutManager(2, 3, new Insets(0, 0, 0, 0), -1, -1));
+        contentPane.add(emojiPanel, new GridConstraints(2, 1, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        e1 = new JButton();
+        e1.setText("e1");
+        emojiPanel.add(e1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        e3 = new JButton();
+        e3.setText("e3");
+        emojiPanel.add(e3, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        e2 = new JButton();
+        e2.setText("e2");
+        emojiPanel.add(e2, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        e4 = new JButton();
+        e4.setText("e4");
+        emojiPanel.add(e4, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        e5 = new JButton();
+        e5.setText("e5");
+        emojiPanel.add(e5, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        e6 = new JButton();
+        e6.setText("e6");
+        emojiPanel.add(e6, new GridConstraints(1, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**
