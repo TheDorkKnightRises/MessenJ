@@ -30,7 +30,7 @@ public class ClientHandler implements Runnable {
         close();
     }
 
-    void setup() {
+    private void setup() {
         try {
             inputStream = new ObjectInputStream(socket.getInputStream());
             String username = (String) inputStream.readObject();
@@ -48,7 +48,7 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    void whileConnected() {
+    private void whileConnected() {
         Object object;
         Message message;
         server.allowTyping(true);
@@ -76,7 +76,7 @@ public class ClientHandler implements Runnable {
         } while (true);
     }
 
-    void close() {
+    private void close() {
         if (server.users[number + 1] != null)
         server.showMessage(new Message("Closing connection with " + server.users[number + 1]));
         try {
