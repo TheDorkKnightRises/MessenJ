@@ -82,6 +82,7 @@ public class Server extends JFrame {
                 try {
                     File file = fileChooser.getSelectedFile();
                     message = new Message(Message.TYPE_FILE, Files.readAllBytes(file.toPath()), file.getName(), user);
+                    showMessage(new Message("Sending file " + file.getName()));
                     send(message);
                 } catch (IOException e1) {
                     showMessage(new Message("Error sending file"));
@@ -179,7 +180,6 @@ public class Server extends JFrame {
     }
 
     void send(Message message) {
-        allowTyping(false);
         for (int i = 0; i < number; i++) {
             try {
                 clientHandlers[i].outputStream.writeObject(message);
@@ -187,11 +187,10 @@ public class Server extends JFrame {
             } catch (NullPointerException | ArrayIndexOutOfBoundsException e) {
             } catch (IOException e) {
                 e.printStackTrace();
-                showMessage(new Message("Couldn\'t send your message to user #" + i));
+                showMessage(new Message("Couldn\'t send your message to user #" + (i + 1)));
             }
         }
         showMessage(message);
-        allowTyping(true);
     }
 
     void showMessage(final Message message) {
@@ -211,7 +210,7 @@ public class Server extends JFrame {
                     textArea.append(message.getSender() + ": " + message.getText() + "\n");
                     break;
                 case Message.TYPE_FILE:
-                    try {
+                    if (!message.getSender().equals(user)) {
                         new File(System.getProperty("user.home")
                                 + File.separator
                                 + "MessenJ")
@@ -222,14 +221,18 @@ public class Server extends JFrame {
                                 + File.separator
                                 + message.getText());
                         showMessage(new Message(message.getSender() + " is sending file: " + message.getText()));
-                        FileOutputStream writer = new FileOutputStream(newFile);
-                        writer.write(message.getData());
-                        writer.close();
-                        showMessage(new Message("File transfer complete"));
-                        showMessage(new Message("Saved to: " + newFile.toPath()));
-                    } catch (IOException e) {
-                        showMessage(new Message("Error transferring file"));
-                    }
+                        new Thread(() -> {
+                            try {
+                                FileOutputStream writer = new FileOutputStream(newFile);
+                                writer.write(message.getData());
+                                writer.close();
+                                showMessage(new Message("File transfer from " + message.getSender() + " complete"));
+                                showMessage(new Message("Saved to: " + newFile.toPath()));
+                            } catch (IOException e) {
+                                showMessage(new Message("Error receiving file"));
+                            }
+                        }).start();
+                    } else textArea.append("Successfully uploaded " + message.getText() + "\n");
                     break;
             }
         });
